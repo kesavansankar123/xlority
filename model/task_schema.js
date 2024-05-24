@@ -1,30 +1,41 @@
 
 
+const { number } = require('@hapi/joi');
 const mongoose =require('mongoose');
 const Schema =mongoose.Schema;
 
 const userSchema = new Schema({
-    Title:{
+    Name:{
         type:String,
         required:true,
     },
-    Discription:{
+    Email:{
         type:String,
         required:true,   
     },
-    Due_Date:{
+    Phone_No:{
+        type:Number,
+        required:true
+    },
+    DOB:{
         type:Date,
         required:true
     },
-    Status:{
+    Date:{
+        type:Date,
+        required:true
+    },
+    Address:{
         type:String,
         required:true
     }
     
     
+    
+    
    
 })
 
-const Task1_Schema= mongoose.model('Task1',userSchema)
+const Task_Schema= mongoose.model('Task',userSchema)
 
-module.exports=Task1_Schema;
+module.exports=Task_Schema;

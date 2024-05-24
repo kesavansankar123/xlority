@@ -22,21 +22,26 @@ const getData = async (req, res) => {
 
 
 const addData = async (req, res) => {
-    const { Title, Discription,Due_Date,Status } = req.body;
+    const { Name, Email,Phone_No,DOB,Date,Address } = req.body;
 
     try {
       const schema = Joi.object({ 
-        Title:Joi.string().required(),
-        Discription:Joi.string().required(),
-        Due_Date: Joi.date().required(),
-        Status:Joi.string().required()
+        Name:Joi.string().required(),
+        Email:Joi.string().email().required(),
+        Phone_No: Joi.number().required() ,
+        DOB:Joi.date().required(),
+        Date:Joi.date().required(),
+        Address:Joi.string().required()
+
   
       });
       const { error } = schema.validate(req.body);
       if (error) return res.status(400).send(error.details[0].message);
 
-        const add_Data = new task({
-          Title, Discription,Due_Date,Status });
+      const user = await task.findOne({Email}); 
+      if(user) return res.status(400).send("Email Already Registered");
+
+        const add_Data = new task({Name, Email,Phone_No,DOB,Date,Address });
         await add_Data.save();
         res.status(200).send('Data Added Successfully');
     } catch (err) {
@@ -45,46 +50,29 @@ const addData = async (req, res) => {
 };
 
 const searchData = async (req, res) => {
-  
-    const key = req.params.key;
-  
-    const query = {
-      $or: [
-        { Title: { $regex: key, $options: "i" } },
-        { Discription: { $regex: key, $options: "i" } },
-        { Status: { $regex: key, $options: "i" } },
-        
-      ]
-    };
-  
-    try {
-      const users = await task
-        .find(query)
-        .sort({ Title: 1 })
-        
-  
-        if (users && users.length > 0) {
-          res.status(200).send(users);
-        } else {
-          res.status(400).send("No Users");
-        }
-    } catch (err) {
-      res.status(500).send(err );
-    }
+  const key = req.params.key;
+  const numericKey = !isNaN(Number(key)) ? Number(key) : null;
+
+  const query = {
+    $or: [
+      { Name: { $regex: key, $options: 'i' } },
+      { Email: { $regex: key, $options: 'i' } },
+      // numericKey !== null ? { Phone_No: numericKey } : { Phone_No: { $regex: key, $options: 'i' } },
+      { Address: { $regex: key, $options: 'i' } },
+    ],
   };
 
-  const getId = async (req, res) => {
-    const {id}=req.params
-    try {
-        const users = await designationUsers.findById(id)
-            if (users) {
-              res.status(200).send(users);
-            } else {
-              res.status(400).send("No Users"); 
-            }  
-          } catch (err) {
-        res.status(400).send('error: ' + err);
+  try {
+    const users = await task.find(query).sort({ Name: 1 });
+
+    if (users && users.length > 0) {
+      res.status(200).send(users);
+    } else {
+      res.status(400).send('No Users');
     }
+  } catch (err) {
+    res.status(500).send(err);
+  }
 };
 
 const updateData = async (req, res) => {
